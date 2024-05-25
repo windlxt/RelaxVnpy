@@ -81,13 +81,18 @@ class MainEngine:
         Add gateway.
         """
         # Use default name if gateway_name not passed
+        # ①：传入的参数是底层接口类名称。加了此参数，在功能上就允许同类接口以不同的名字加载多次，可以用同样的接口连接不同的交易商。
+        # 如果没有传入gateway_name，则使用默认名称
         if not gateway_name:
             gateway_name: str = gateway_class.default_name
 
+        # ②：根据类名称，创建一个底层接口实例
         gateway: BaseGateway = gateway_class(self.event_engine, gateway_name)
+        # ③：将新创建的接口实例加入到底层接口字典。
         self.gateways[gateway_name] = gateway
 
         # Add gateway supported exchanges into engine
+        # ④将该底层接口支持的交易所加入到交易所列表中
         for exchange in gateway.exchanges:
             if exchange not in self.exchanges:
                 self.exchanges.append(exchange)

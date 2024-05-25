@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Callable, Dict, Tuple, Union, Optional
 from decimal import Decimal
 from math import floor, ceil
-from .ui.qt import QtCore
+from PySide6 import QtCore
 
 import numpy as np
 import talib
@@ -27,8 +27,8 @@ import subprocess
 def get_screen_resolution():
     output = subprocess.Popen(r'xrandr | grep "\*" | cut -d" " -f4',
                               shell=True, stdout=subprocess.PIPE).communicate()[0]
-    resolution_list = output.split()[1].split(b'x')     # 主屏幕
-    # resolution_list = output.split()[0].split(b'x')   # 扩展屏幕
+    # resolution_list = output.split()[1].split(b'x')     # 主屏幕
+    resolution_list = output.split()[0].split(b'x')   # 扩展屏幕
     # return {'width': resolution_list[0], 'height': resolution_list[1]}
     return int(resolution_list[0]), int(resolution_list[1])
 

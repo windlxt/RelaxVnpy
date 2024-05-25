@@ -34,6 +34,8 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
     qapp: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     qapp.setStyleSheet(qdarkstyle.load_stylesheet(qt_api="pyside6"))
 
+    # qapp.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+
     # Set up font
     font: QtGui.QFont = QtGui.QFont(setting.SETTINGS["font.family"], setting.SETTINGS["font.size"])
     qapp.setFont(font)
@@ -64,6 +66,7 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
     sys.excepthook = excepthook
 
     if sys.version_info >= (3, 8):
+        print(sys.version_info)
         def threading_excepthook(args: threading.ExceptHookArgs) -> None:
             """Show exception detail from background threads with QMessageBox."""
             sys.__excepthook__(args.exc_type, args.exc_value, args.exc_traceback)
