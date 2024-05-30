@@ -3,14 +3,12 @@
 心境：行到水穷处 坐看云起时
 日期：2024年05月07日
 """
-
-
 from PySide6.QtGui import QCloseEvent
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout
 
 from vnpy.trader.ui.future_window import FutureWindow
-from vnpy.trader.ui.database_window import DatabaseWindow
+from vnpy_datamanager_stock.ui.widget_database_stock import ManagerWidgetStock
 from .. import utility
 
 
@@ -58,34 +56,42 @@ class TradingPlatformWindow(QWidget):
         self.hlayout.addWidget(self.pbtn_server)
         self.hlayout.addWidget(self.pbtn_close)
         self.vlayout.addLayout(self.hlayout)
+
     def bind(self):
         self.pbtn_stock.clicked.connect(self.open_stock_window)
         self.pbtn_future.clicked.connect(self.open_future_window)
         self.pbtn_data_manager.clicked.connect(self.open_data_manager)
         self.pbtn_funds_manager.clicked.connect(self.open_funds_manager)
-        self.pbtn_data_manager.clicked.connect(self.open_other_window)
+        self.pbtn_server.clicked.connect(self.open_server_window)
         self.pbtn_close.clicked.connect(self.close)
 
+    @Slot()
     def open_stock_window(self):
+        print('open stock window.')
         pass
 
+    @Slot()
     def open_future_window(self):
-        future_window = FutureWindow(self.main_engine, self.event_engine)
-        future_window.showMaximized()
+        self.future_window = FutureWindow(self.main_engine, self.event_engine)
+        self.future_window.showMaximized()
 
+    @Slot()
     def open_data_manager(self):
         print('open data manager.')
-        data_manager_window = DatabaseWindow(self.main_engine, self.event_engine)
-        data_manager_window.resize(500, 500)
-        data_manager_window.show()
-        print(data_manager_window)
+        self.data_manager_window = ManagerWidgetStock(self.main_engine, self.event_engine)
+        self.data_manager_window.show()
 
+    @Slot()
     def open_funds_manager(self):
+        print('open funds manager window.')
         pass
 
-    def open_other_window(self):
+    @Slot()
+    def open_server_window(self):
+        print('open server window.')
         pass
 
+    @Slot()
     def closeEvent(self, event: QCloseEvent) -> None:
         """
         Call main engine close function before exit.

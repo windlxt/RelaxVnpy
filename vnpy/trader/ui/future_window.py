@@ -39,7 +39,7 @@ from .. import utility
 
 class FutureWindow(QtWidgets.QMainWindow):
     """
-    Main window of the trading platform.
+    Main window of the trading future platform.
     """
 
     def __init__(self, main_engine, event_engine) -> None:

@@ -32,5 +32,5 @@ then
   echo MongoDB 启动成功!进程ID是: "$(cat o.txt)"
 # echo grep -oE '^[0-9]+' o.txt | head -n 1
 else
-  echo 启动失败!
+  echo MongoDB 启动失败!
 fi

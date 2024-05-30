@@ -11,4 +11,7 @@ EVENT_POSITION = "ePosition."
 EVENT_ACCOUNT = "eAccount."
 EVENT_QUOTE = "eQuote."
 EVENT_CONTRACT = "eContract."
-EVENT_LOG = "eLog"
+EVENT_LOG = "eLog."
+
+# =====以下是自己设定的信号===========================
+EVENT_UPDATE_DATABASE_FINISHED = 'eUpdateDatabaseFinished.'

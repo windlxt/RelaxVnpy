@@ -40,7 +40,8 @@ SETTINGS: Dict[str, Any] = {
 
 
 # Load global setting from json file.
-SETTING_FILENAME: str = "vt_setting.json"
+# SETTING_FILENAME: str = "vt_setting.json"
+SETTING_FILENAME: str = "vt_setting_stock.json"
 SETTINGS.update(load_json(SETTING_FILENAME))
 
 

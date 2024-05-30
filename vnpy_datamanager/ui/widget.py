@@ -385,7 +385,8 @@ class ManagerWidget(QtWidgets.QWidget):
                 overview.symbol,
                 overview.exchange,
                 overview.interval,
-                overview.end
+                overview.end,
+                print
             )
             count += 1
             progress = int(round(count / total * 100, 0))

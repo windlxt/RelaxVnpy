@@ -3,6 +3,7 @@
 心境：行到水穷处 坐看云起时
 日期：2024年05月23日
 """
+print('Enter vnpy_baostock_stock 模块')
 from datetime import datetime
 from typing import List, Optional
 
@@ -54,64 +55,89 @@ class BaoStockDatafeed(BaseDatafeed):
     def __delete__(self):
         bs.logout()
 
-    def query_bar_history(self, req: HistoryRequest) -> Optional[List[BarData]]:
-        """查询k线数据"""
+    def baostock_query_stock_industry(self):
+        """查询 行业分类 数据"""
         if not self.inited:
             self.init()
 
-        symbol = req.symbol
-        exchange = req.exchange
-        interval = req.interval
-        start = req.start.strftime("%Y-%m-%d")
-        end = req.end.strftime("%Y-%m-%d")
-        bs_symbol = f"sz.{symbol}" if exchange == Exchange.SZSE else f"sh.{symbol}"
+        # 获取行业分类数据
+        rs = bs.query_stock_industry()
+        # rs = bs.query_stock_basic(code_name="浦发银行")
+        print('query_stock_industry error_code:' + rs.error_code)
+        print('query_stock_industry respond  error_msg:' + rs.error_msg)
 
-        bs_interval = INTERVAL_VT2TS.get(interval)
-        if not bs_interval:
-            return None
+        # 打印结果集
+        industry_list = []
+        while (rs.error_code == '0') & rs.next():
+            # 获取一条记录，将记录合并在一起
+            industry_list.append(rs.get_row_data())
+        result = pd.DataFrame(industry_list, columns=rs.fields)
 
-        if interval in (Interval.MINUTE, Interval.HOUR):
-            fields = "time,code,open,high,low,close,volume,amount"
-        else:
-            fields = "date,code,open,high,low,close,volume,amount"
-        try:
-            rs = bs.query_history_k_data_plus(
-                bs_symbol,
-                fields,
-                start_date=start,
-                end_date=end,
-                frequency=bs_interval,
-                adjustflag="3",
-            )
-        except Exception as e:
-            return []
-        data: List[BarData] = []
+        # 将DataFrame转换为字典，整体构成一个列表，内层是将原始数据的每行提取出来形成字典
+        # 调用格式为data_records[index][key1]
+        data_dict = result.to_dict('records')
 
-        print(fields.split(','))
-        while (rs.error_code == "0") & rs.next():
-            item = rs.get_row_data()
-            print(item)
-            str_format = "%Y-%m-%d"
-            if interval in (Interval.MINUTE, Interval.HOUR):
-                str_format = "%Y%m%d%H%M%S%f"
-            dt = datetime.strptime(item[0], str_format)
-            bar: BarData = BarData(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                datetime=dt,
-                open_price=round_to(item[2], 0.000001),
-                high_price=round_to(item[3], 0.000001),
-                low_price=round_to(item[4], 0.000001),
-                close_price=round_to(item[5], 0.000001),
-                volume=float(item[6]),
-                turnover=float(item[7]),
-                open_interest=0,
-                gateway_name="BS",
-            )
-            data.append(bar)
+        return data_dict
 
-        return data
+
+    # def query_bar_history(self, req: HistoryRequest) -> Optional[List[BarData]]:
+    #     """查询k线数据"""
+    #     if not self.inited:
+    #         self.init()
+    #
+    #     symbol = req.symbol
+    #     exchange = req.exchange
+    #     interval = req.interval
+    #     start = req.start.strftime("%Y-%m-%d")
+    #     end = req.end.strftime("%Y-%m-%d")
+    #     bs_symbol = f"sz.{symbol}" if exchange == Exchange.SZSE else f"sh.{symbol}"
+    #
+    #     bs_interval = INTERVAL_VT2TS.get(interval)
+    #     if not bs_interval:
+    #         return None
+    #
+    #     if interval in (Interval.MINUTE, Interval.HOUR):
+    #         fields = "time,code,open,high,low,close,volume,amount"
+    #     else:
+    #         fields = "date,code,open,high,low,close,volume,amount"
+    #     try:
+    #         rs = bs.query_history_k_data_plus(
+    #             bs_symbol,
+    #             fields,
+    #             start_date=start,
+    #             end_date=end,
+    #             frequency=bs_interval,
+    #             adjustflag="3",
+    #         )
+    #     except Exception as e:
+    #         return []
+    #     data: List[BarData] = []
+    #
+    #     print(fields.split(','))
+    #     while (rs.error_code == "0") & rs.next():
+    #         item = rs.get_row_data()
+    #         print(item)
+    #         str_format = "%Y-%m-%d"
+    #         if interval in (Interval.MINUTE, Interval.HOUR):
+    #             str_format = "%Y%m%d%H%M%S%f"
+    #         dt = datetime.strptime(item[0], str_format)
+    #         bar: BarData = BarData(
+    #             symbol=symbol,
+    #             exchange=exchange,
+    #             interval=interval,
+    #             datetime=dt,
+    #             open_price=round_to(item[2], 0.000001),
+    #             high_price=round_to(item[3], 0.000001),
+    #             low_price=round_to(item[4], 0.000001),
+    #             close_price=round_to(item[5], 0.000001),
+    #             volume=float(item[6]),
+    #             turnover=float(item[7]),
+    #             open_interest=0,
+    #             gateway_name="BS",
+    #         )
+    #         data.append(bar)
+    #
+    #     return data
 
 
 if __name__ == "__main__":

@@ -44,6 +44,7 @@ def get_datafeed() -> BaseDatafeed:
 
     # Read datafeed related global setting
     datafeed_name: str = SETTINGS["datafeed.name"]
+    print(datafeed_name)
 
     if not datafeed_name:
         datafeed = BaseDatafeed()
