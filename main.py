@@ -49,6 +49,8 @@ from vnpy_datamanager import DataManagerApp
 # from vnpy_webtrader import WebTraderApp
 # from vnpy_portfoliomanager import PortfolioManagerApp
 
+from vnpy_datamanager_stock import StockDataManagerApp
+
 
 print(vnpy.__version__)
 # from pathlib import Path
@@ -61,7 +63,7 @@ def main_ui():
     event_engine = EventEngine()
     main_engine = MainEngine(event_engine)
 
-    main_engine.add_gateway(CtpGateway)
+    # main_engine.add_gateway(CtpGateway)
     # main_engine.add_gateway(CtptestGateway)
     # main_engine.add_gateway(MiniGateway)
     # main_engine.add_gateway(FemasGateway)
@@ -84,8 +86,8 @@ def main_ui():
     # main_engine.add_gateway(NhStockGateway)
 
     # main_engine.add_app(PaperAccountApp)
-    main_engine.add_app(CtaStrategyApp)
-    main_engine.add_app(CtaBacktesterApp)
+    # main_engine.add_app(CtaStrategyApp)
+    # main_engine.add_app(CtaBacktesterApp)
     # main_engine.add_app(SpreadTradingApp)
     # main_engine.add_app(AlgoTradingApp)
     # main_engine.add_app(OptionMasterApp)
@@ -94,17 +96,20 @@ def main_ui():
     # main_engine.add_app(ChartWizardApp)
     # main_engine.add_app(RpcServiceApp)
     # main_engine.add_app(ExcelRtdApp)
-    main_engine.add_app(DataManagerApp)
+    # main_engine.add_app(DataManagerApp)
     # main_engine.add_app(DataRecorderApp)
     # main_engine.add_app(RiskManagerApp)
     # main_engine.add_app(WebTraderApp)
     # main_engine.add_app(PortfolioManagerApp)
 
-    trading_platform_window = TradingPlatformWindow(main_engine, event_engine)
+    # ====以下是股票分析界面 APP =======================================
+    main_engine.add_app(StockDataManagerApp)
 
+    trading_platform_window = TradingPlatformWindow(main_engine, event_engine)
     trading_platform_window.show()
 
     qapp.exec()
+
 
 def main_no_ui():
     """无窗口"""

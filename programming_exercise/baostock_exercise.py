@@ -27,7 +27,7 @@ print('login respond  error_msg:'+lg.error_msg)
 
 #### 获取历史K线数据 ####
 # 详细指标参数，参见“历史行情指标参数”章节
-rs = bs.query_history_k_data_plus("sh.600000",
+rs = bs.query_history_k_data_plus("sh.000001",
     "date,code,open,high,low,close,preclose,volume,amount,adjustflag,turn,tradestatus,pctChg,peTTM,pbMRQ,psTTM,pcfNcfTTM,isST",
     start_date='2020-01-01', end_date='2024-05-22',
     frequency="d", adjustflag="3") #frequency="d"取日k线，adjustflag="3"默认不复权

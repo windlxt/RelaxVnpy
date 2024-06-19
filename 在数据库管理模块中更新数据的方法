@@ -1,0 +1,44 @@
+=======================================================================
+共涉及 3 个包，4 个模块：
+======================================================================
+一、在 vnpy_mongodb_stock 包中，修改 mongodb_stock_database.py  模块，__init__ 内容，建立初始化集合：   
+        # 1. 初始化 行业分类 数据表
+        	self.classification_of_industry: Collection = self.db["classification_of_industry"]
+        	self.classification_of_industry.create_index([("code", ASCENDING)], unique=True)
+        
+二、在 vnpy_datamanager_stock 包中，修改 engine_database_stock.py 模块：
+    	def update_baostock_database(self):
+        	# 1. 更新 行业分类 数据
+        	result = self.datafeed.baostock_query_stock_industry()
+        	self.database.baostock_save_industry_data(result)
+        	
+三、在 vnpy_baostock_stock 包中，修改 baostock_stock_datafeed.py 模块，添加下载函数，返回字典：
+    	def baostock_query_stock_industry(self):
+        	"""查询 行业分类 数据"""
+
+四、在 vnpy_mongodb_stock 包中，修改 mongodb_stock_database.py  模块，添加：
+	def baostock_save_industry_data(self, result):
+        	"""保存 industry 数据"""
+        	self.classification_of_industry.drop()      # 清空表
+        	self.classification_of_industry.insert_many(result)
+        	return True
+============================================================================================
+以上完成后，可以点击 数据库更新 按钮 更新数据库。
+以下是点击 左侧 tree 控件，在右侧 tablewidget 中显示的步骤：
+============================================================================================
+
+五、在 vnpy_datamanager_stock 包中，修改 widget_database_stock.py 模块,在 StackBaostock 类中，添加：
+  1. 在 __init__中，添加 tree 子项：
+             	self.industry_child: QTreeWidgetItem = QTreeWidgetItem()
+        	self.industry_child.setText(0, "板块行业")
+        	self.tree.addTopLevelItem(self.industry_child)
+        
+  2.  	def on_tree_item_clicked(self, item, column):
+        	str_row = item.text(0)
+        	match str_row:
+            	case '板块行业':
+                	cursor: Cursor = self.stock_engine.database.classification_of_industry.find({})
+                	self.update_tablewidget(cursor)
+                	self.tedit_specification.setText("updateDate 更新日期; code 证券代码")
+
+六、立即更新数据库。再点击树节点对应项，右侧 tablewidget 就可以正常显示。

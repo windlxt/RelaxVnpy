@@ -20,4 +20,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .mongodb_stock_database import MongodbDatabase as Database
+from .mongodb_stock_database import StockMongodbDatabase as Database

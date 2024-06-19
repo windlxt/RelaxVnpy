@@ -13,7 +13,7 @@ print('login respond error_code:'+lg.error_code)
 print('login respond  error_msg:'+lg.error_msg)
 
 # 获取证券基本资料
-rs = bs.query_stock_basic(code="sh.600000")
+rs = bs.query_stock_basic(code="bj.430017")
 # rs = bs.query_stock_basic(code_name="浦发银行")  # 支持模糊查询
 print('query_stock_basic respond error_code:'+rs.error_code)
 print('query_stock_basic respond  error_msg:'+rs.error_msg)
@@ -25,7 +25,7 @@ while (rs.error_code == '0') & rs.next():
     data_list.append(rs.get_row_data())
 result = pd.DataFrame(data_list, columns=rs.fields)
 # 结果集输出到csv文件
-result.to_csv("stock_basic.csv", encoding="gbk", index=False)
+result.to_csv("stock_basic.csv", encoding="utf-8", index=False)
 print(result)
 
 # 登出系统

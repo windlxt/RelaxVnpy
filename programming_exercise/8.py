@@ -4,20 +4,17 @@
 日期：2024年05月29日
 """
 from datetime import datetime
-from zoneinfo import ZoneInfo
-from tzlocal import get_localzone_name
+from PySide6.QtWidgets import QApplication, QMessageBox
+from vnpy_baostock_stock.baostock_stock_datafeed import BaoStockDatafeed, get_previous_year_quarter
 
-DB_TZ = ZoneInfo(get_localzone_name())
+date_now = datetime.now()
+year, quarter = get_previous_year_quarter(date_now)
+print(year, quarter)
 
-
-def convert_tz(dt: datetime) -> datetime:
-    """
-    Convert timezone of datetime object to DB_TZ.
-    """
-    dt: datetime = dt.astimezone(DB_TZ)
-    print(dt)
-    return dt.replace(tzinfo=None)
+# BaoStockDatafeed().baostock_query_stock_growth()
+# BaoStockDatafeed().update_increment_quarter_data()
 
 
-t = convert_tz(datetime.utcnow())
-print(t)
+
+
+

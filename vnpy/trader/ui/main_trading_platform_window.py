@@ -3,12 +3,14 @@
 心境：行到水穷处 坐看云起时
 日期：2024年05月07日
 """
+import vnpy
 from PySide6.QtGui import QCloseEvent
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout
 
 from vnpy.trader.ui.future_window import FutureWindow
-from vnpy_datamanager_stock.ui.widget_database_stock import ManagerWidgetStock
+from vnpy_datamanager_stock.ui.stock_widget_database import StockManagerWidget
+from .stock_main_window import StockMainWindow
 from .. import utility
 
 
@@ -22,12 +24,14 @@ class TradingPlatformWindow(QWidget):
         self.main_engine = main_engine
         self.event_engine = event_engine
 
+        self.window_title: str = f"量化交易系统 - {vnpy.__version__}   [{utility.TRADER_DIR}]"
         self.resize(utility.SCREEN_RECT.width() / 3, utility.SCREEN_RECT.height() / 3)
 
         self.init_ui()
         self.bind()
 
     def init_ui(self):
+        self.setWindowTitle(self.window_title)
         self.vlayout = QVBoxLayout(self)
         # 显示文本
         self.textEdit = QTextEdit()
@@ -68,7 +72,8 @@ class TradingPlatformWindow(QWidget):
     @Slot()
     def open_stock_window(self):
         print('open stock window.')
-        pass
+        win = StockMainWindow(self.main_engine, self.event_engine)
+        win.showMaximized()
 
     @Slot()
     def open_future_window(self):
@@ -78,7 +83,7 @@ class TradingPlatformWindow(QWidget):
     @Slot()
     def open_data_manager(self):
         print('open data manager.')
-        self.data_manager_window = ManagerWidgetStock(self.main_engine, self.event_engine)
+        self.data_manager_window = StockManagerWidget(self.main_engine, self.event_engine)
         self.data_manager_window.show()
 
     @Slot()
