@@ -1,6 +1,5 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-o.txt
 *.ipynb
 *.py[cod]
 *$py.class
@@ -37,6 +36,7 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+o.txt
 
 # Unit test / coverage reports
 htmlcov/

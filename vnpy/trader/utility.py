@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Callable, Dict, Tuple, Union, Optional
 from decimal import Decimal
 from math import floor, ceil
+
 from PySide6 import QtCore
 
 import numpy as np
@@ -38,6 +39,30 @@ print('屏幕分辨率：', my_resolution)
 # 定义屏幕大小的常量
 SCREEN_RECT = QtCore.QRect(0, 0, my_resolution[0], my_resolution[1])
 ############################################
+# 定义颜色
+RED = '\033[31m'
+GREEN = '\033[32m'
+YELLOW = '\033[33m'
+BLUE = '\033[34m'
+RESET = '\033[39m'
+
+
+def printr(msg: str) -> None:
+    print(RED + msg + RESET)
+
+
+def printg(msg: str) -> None:
+    print(GREEN + msg + RESET)
+
+
+def printy(msg: str) -> None:
+    print(YELLOW + msg + RESET)
+
+
+def printb(msg: str) -> None:
+    print(BLUE + msg + RESET)
+#############################################
+
 
 if sys.version_info >= (3, 9):
     from zoneinfo import ZoneInfo, available_timezones              # noqa

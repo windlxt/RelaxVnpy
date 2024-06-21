@@ -55,14 +55,15 @@ class StockMainWindow(QMainWindow):
 
     def init_window(self):
         # 生成5个子窗口
-        self.stock_holding_pool_widget = StockHoldingPool(self.main_engine, self.event_engine)
+        self.stock_k_line_chart_widget = StockKLineChart(self.main_engine, self.event_engine)
+        self.stock_holding_pool_widget = StockHoldingPool(self.main_engine, self.event_engine, self.stock_k_line_chart_widget.chart)
         self.stock_prepare_sell_pool_widget = StockPrepareSellPool(self.main_engine, self.event_engine)
         self.stock_prepare_buy_pool_widget = StockPrepareBuyPool(self.main_engine, self.event_engine)
         # self.stock_watch_pool_widget = StockWatchPool(self.main_engine, self.event_engine)
-        self.stock_k_line_chart_widget = StockKLineChart(self.main_engine, self.event_engine)
+
         # 设置子窗口宽度
         # self.stock_watch_pool_widget.setFixedWidth(150)
-        self.stock_k_line_chart_widget.setFixedWidth(650)
+        self.stock_k_line_chart_widget.setFixedWidth(680)
         # 设置双击响应函数
         self.stock_prepare_buy_pool_widget.itemDoubleClicked.connect(self.stock_prepare_buy_pool_widget.update_with_cell)
         self.stock_prepare_sell_pool_widget.itemDoubleClicked.connect(self.stock_prepare_buy_pool_widget.update_with_cell)
@@ -208,28 +209,28 @@ class StockMainWindow(QMainWindow):
         """
         Call main engine close function before exit.
         """
-        reply = QMessageBox.question(
-            self,
-            "退出",
-            "确认退出？",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
-        )
+        # reply = QMessageBox.question(
+        #     self,
+        #     "退出",
+        #     "确认退出？",
+        #     QMessageBox.Yes | QMessageBox.No,
+        #     QMessageBox.No,
+        # )
+        #
+        # if reply == QMessageBox.Yes:
+        for widget in self.widgets.values():
+            widget.close()
 
-        if reply == QMessageBox.Yes:
-            for widget in self.widgets.values():
-                widget.close()
+        for monitor in self.monitors.values():
+            monitor.save_setting()
 
-            for monitor in self.monitors.values():
-                monitor.save_setting()
+        self.save_window_setting("custom")
 
-            self.save_window_setting("custom")
+        self.main_engine.close()
 
-            self.main_engine.close()
-
-            event.accept()
-        else:
-            event.ignore()
+        event.accept()
+        # else:
+        #     event.ignore()
 
     def open_widget(self, widget_class: QWidget, name: str) -> None:
         """

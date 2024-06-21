@@ -9,6 +9,30 @@ from .object import BaseData
 
 
 @dataclass
+class BarData(BaseData):
+    """
+    Candlestick bar data of a certain trading period.
+    """
+
+    symbol: str
+    exchange: str
+    datetime: datetime
+
+    interval: str = None
+    volume: float = 0
+    turnover: float = 0
+    open_interest: float = 0
+    open_price: float = 0
+    high_price: float = 0
+    low_price: float = 0
+    close_price: float = 0
+    #
+    # def __post_init__(self) -> None:
+    #     """"""
+    #     self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
+
+
+@dataclass
 class StockHoldingData(BaseData):
     """持有股票数据"""
     date_buy: datetime

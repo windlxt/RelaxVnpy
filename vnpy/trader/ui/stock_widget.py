@@ -20,9 +20,9 @@ from PySide6.QtWidgets import QWidget, QLabel, QTableWidget, QDialog, QHBoxLayou
     QVBoxLayout, QMenu, QTableWidgetItem, QHeaderView, QFileDialog, QLineEdit, QPushButton, \
     QFormLayout, QScrollArea, QMessageBox, QAbstractItemView
 from PySide6.QtGui import QIcon, QColor, QAction, QContextMenuEvent, QCursor, QBrush
-from PySide6.QtCore import Qt, Signal, QSettings, QByteArray
+from PySide6.QtCore import Qt, Signal, QSettings, QByteArray, Slot
 
-from vnpy.chart import ChartWidget, CandleItem, VolumeItem
+from vnpy.chart import StockChartWidget, CandleItem, VolumeItem
 from ..constant import Direction, Exchange, Offset, OrderType
 from ..engine import MainEngine, Event, EventEngine
 from ..event import (
@@ -44,9 +44,11 @@ from ..object import (
     QuoteData,
     TickData
 )
-from ..utility import load_json, save_json, get_digits, ZoneInfo
+from ..utility import load_json, save_json, get_digits, ZoneInfo, printr, printb, printg, printy
 from ..setting import SETTING_FILENAME, SETTINGS
 from ..locale import _
+
+from vnpy.trader.database import BaseDatabase, get_database
 
 EVENT_STOCK = "eStock."
 
@@ -175,7 +177,7 @@ class HoldingDaysCell(BaseCell):
         if int(content) > 15:
             self.setForeground(QBrush(COLOR_RED))
 
-        self.setText(content)
+        self.setText(str(content))
         self._data = data
 
 
@@ -222,9 +224,13 @@ class BaseMonitor(QTableWidget):
         self.event_engine: EventEngine = event_engine
         self.cells: Dict[str, dict] = {}
 
+        self.database: BaseDatabase = get_database()
+
         self.init_ui()
         self.load_setting()
         self.register_event()
+
+        self.itemClicked.connect(self.process_item_clicked)
 
     def init_ui(self) -> None:
         """"""
@@ -385,6 +391,9 @@ class BaseMonitor(QTableWidget):
             self.horizontalHeader().restoreState(column_state)
             self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
 
+    def process_item_clicked(self, item):
+        pass
+
 
 class StockHoldingPool(BaseMonitor):
     """持有股票池窗口，一日一更新"""
@@ -407,6 +416,10 @@ class StockHoldingPool(BaseMonitor):
         "profit_loss": {"display": _("盈亏"), "cell": ProfitLossCell, "update": True}
         }
 
+    def __init__(self, main_engine, event_engine, chart):
+        self.chart = chart
+        super().__init__(main_engine, event_engine)
+
     def init_table(self) -> None:
         self.setColumnCount(len(self.headers))
 
@@ -417,13 +430,13 @@ class StockHoldingPool(BaseMonitor):
         self.setEditTriggers(self.NoEditTriggers)
         self.setAlternatingRowColors(True)
         self.setSortingEnabled(self.sorting)
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)  # 设置选择行为
 
         # 读取数据
         workbook = openpyxl.load_workbook('/home/lxt/stock_plan/stock.xlsx')
         worksheet = workbook.active
         # 转换成 DataFrame，用于计算
-        df = pd.DataFrame(worksheet)
-        print(df)
+        self.df = pd.DataFrame(worksheet)
 
         # 设置QTableWidget的行和列数
         self.setRowCount(worksheet.max_row-1)
@@ -441,27 +454,27 @@ class StockHoldingPool(BaseMonitor):
                 # 格式化日期
                 if col == 0:
                     setting: dict = self.headers['date_buy']
-                    self.setItem(row - 2, col, setting["cell"](item_value, None))
+                    self.setItem(row - 2, col, setting["cell"](item_value, item_value))
                 # 计算持股天数
                 elif col == 7:
                     setting: dict = self.headers['days_holding']
-                    day_plus = datetime.now() - df.iloc[row-1, 0].value
-                    self.setItem(row - 2, col, setting["cell"](str(day_plus.days), None))
+                    day_plus = datetime.now() - self.df.iloc[row-1, 0].value
+                    self.setItem(row - 2, col, setting["cell"](day_plus.days, day_plus.days))
                 # 计算成本
                 elif col == worksheet.max_column-3:
                     setting: dict = self.headers['cost']
-                    cost = float(df.iloc[row-1, 4].value) * float(df.iloc[row-1, 5].value)
-                    self.setItem(row - 2, col, setting["cell"]('{:.2f}'.format(cost), None))
+                    cost = float(self.df.iloc[row-1, 4].value) * float(self.df.iloc[row-1, 5].value)
+                    self.setItem(row - 2, col, setting["cell"]('{:.2f}'.format(cost), cost))
                 # 计算市价
                 elif col == worksheet.max_column - 2:
                     setting: dict = self.headers['market_value']
-                    market_value = float(df.iloc[row - 1, 5].value) * float(df.iloc[row - 1, 8].value)
-                    self.setItem(row - 2, col, setting["cell"]('{:.2f}'.format(market_value), None))
+                    market_value = float(self.df.iloc[row - 1, 5].value) * float(self.df.iloc[row - 1, 8].value)
+                    self.setItem(row - 2, col, setting["cell"]('{:.2f}'.format(market_value), market_value))
                 # 计算盈亏
                 elif col == worksheet.max_column - 1:
                     setting: dict = self.headers['profit_loss']
                     profit_loss = market_value - cost
-                    self.setItem(row - 2, col, setting["cell"]('{:.2f}'.format(profit_loss), None))
+                    self.setItem(row - 2, col, setting["cell"]('{:.2f}'.format(profit_loss), profit_loss))
                 else:
                     # 在QTableWidget中设置数据
                     match col:
@@ -481,10 +494,32 @@ class StockHoldingPool(BaseMonitor):
                             colume = 'price_current'
                     setting: dict = self.headers[colume]
 
-                    self.setItem(row - 2, col, setting['cell'](str(item_value), None))
-                    
+                    self.setItem(row - 2, col, setting['cell'](item_value, item_value))
 
         self.resize_columns()
+
+        self.process_item_clicked(0)
+
+    @Slot()
+    def process_item_clicked(self, item):
+
+        if item == 0:
+            code = str(self.df.iloc[1, 2].value) + '.' + str(self.df.iloc[1, 1].value)
+            print(code)
+        else:
+            code = str(self.df.iloc[item.row()+1, 2].value) + '.' + str(self.df.iloc[item.row()+1, 1].value)
+        self.startdate: str = SETTINGS["database.startdate"]
+
+        history = self.database.load_bar_data(code, '', '', datetime.strptime(self.startdate, '%Y-%m-%d'), datetime.now())
+
+        try:
+            print(history[0])
+        except IndexError:
+            self.chart.clear()
+            printr('数据库没有存储该股票数据！')
+
+        self.chart.update_history(history)
+
 
 class StockPrepareSellPool(BaseMonitor):
     """准备卖出股票池窗口，一日一更新"""
@@ -576,66 +611,71 @@ class StockKLineChart(QWidget):
 
     def init_ui(self):
         # Create chart widget
-        self.chart: ChartWidget = ChartWidget()
+        self.chart: StockChartWidget = StockChartWidget()
         self.chart.add_plot("candle", hide_x_axis=True)
         self.chart.add_plot("volume", maximum_height=200)
         self.chart.add_item(CandleItem, "candle", "candle")
         self.chart.add_item(VolumeItem, "volume", "volume")
         self.chart.add_cursor()
 
-        # Create help widget
-        text1: str = "红色虚线 —— 盈利交易"
-        label1: QLabel = QLabel(text1)
-        label1.setStyleSheet("color:red")
-
-        text2: str = "绿色虚线 —— 亏损交易"
-        label2: QLabel = QLabel(text2)
-        label2.setStyleSheet("color:#00FF00")
-
-        text3: str = "黄色向上箭头 —— 买入开仓 Buy"
-        label3: QLabel = QLabel(text3)
-        label3.setStyleSheet("color:yellow")
-
-        text4: str = "黄色向下箭头 —— 卖出平仓 Sell"
-        label4: QLabel = QLabel(text4)
-        label4.setStyleSheet("color:yellow")
-
-        text5: str = "紫红向下箭头 —— 卖出开仓 Short"
-        label5: QLabel = QLabel(text5)
-        label5.setStyleSheet("color:magenta")
-
-        text6: str = "紫红向上箭头 —— 买入平仓 Cover"
-        label6: QLabel = QLabel(text6)
-        label6.setStyleSheet("color:magenta")
-
-        hbox1: QHBoxLayout = QHBoxLayout()
-        hbox1.addStretch()
-        hbox1.addWidget(label1)
-        hbox1.addStretch()
-        hbox1.addWidget(label2)
-        hbox1.addStretch()
-
-        hbox2: QHBoxLayout = QHBoxLayout()
-        hbox2.addStretch()
-        hbox2.addWidget(label3)
-        hbox2.addStretch()
-        hbox2.addWidget(label4)
-        hbox2.addStretch()
-
-        hbox3: QHBoxLayout = QHBoxLayout()
-        hbox3.addStretch()
-        hbox3.addWidget(label5)
-        hbox3.addStretch()
-        hbox3.addWidget(label6)
-        hbox3.addStretch()
-
-        # Set layout
         vbox: QVBoxLayout = QVBoxLayout()
         vbox.addWidget(self.chart)
-        vbox.addLayout(hbox1)
-        vbox.addLayout(hbox2)
-        vbox.addLayout(hbox3)
         self.setLayout(vbox)
+
+
+        # # Create help widget
+        # text1: str = "红色虚线 —— 盈利交易"
+        # label1: QLabel = QLabel(text1)
+        # label1.setStyleSheet("color:red")
+        #
+        # text2: str = "绿色虚线 —— 亏损交易"
+        # label2: QLabel = QLabel(text2)
+        # label2.setStyleSheet("color:#00FF00")
+        #
+        # text3: str = "黄色向上箭头 —— 买入开仓 Buy"
+        # label3: QLabel = QLabel(text3)
+        # label3.setStyleSheet("color:yellow")
+        #
+        # text4: str = "黄色向下箭头 —— 卖出平仓 Sell"
+        # label4: QLabel = QLabel(text4)
+        # label4.setStyleSheet("color:yellow")
+        #
+        # text5: str = "紫红向下箭头 —— 卖出开仓 Short"
+        # label5: QLabel = QLabel(text5)
+        # label5.setStyleSheet("color:magenta")
+        #
+        # text6: str = "紫红向上箭头 —— 买入平仓 Cover"
+        # label6: QLabel = QLabel(text6)
+        # label6.setStyleSheet("color:magenta")
+        #
+        # hbox1: QHBoxLayout = QHBoxLayout()
+        # hbox1.addStretch()
+        # hbox1.addWidget(label1)
+        # hbox1.addStretch()
+        # hbox1.addWidget(label2)
+        # hbox1.addStretch()
+        #
+        # hbox2: QHBoxLayout = QHBoxLayout()
+        # hbox2.addStretch()
+        # hbox2.addWidget(label3)
+        # hbox2.addStretch()
+        # hbox2.addWidget(label4)
+        # hbox2.addStretch()
+        #
+        # hbox3: QHBoxLayout = QHBoxLayout()
+        # hbox3.addStretch()
+        # hbox3.addWidget(label5)
+        # hbox3.addStretch()
+        # hbox3.addWidget(label6)
+        # hbox3.addStretch()
+        #
+        # # Set layout
+        # vbox: QVBoxLayout = QVBoxLayout()
+        # vbox.addWidget(self.chart)
+        # vbox.addLayout(hbox1)
+        # vbox.addLayout(hbox2)
+        # vbox.addLayout(hbox3)
+        # self.setLayout(vbox)
 
 
 class ContractManager(QWidget):

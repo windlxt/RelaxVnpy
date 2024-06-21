@@ -14,7 +14,8 @@ from pymongo.results import DeleteResult
 from pymongo.errors import BulkWriteError
 
 from vnpy.trader.constant import Exchange, Interval
-from vnpy.trader.object import BarData, TickData
+from vnpy.trader.object import TickData
+from vnpy.trader.object_stock import BarData
 from vnpy.trader.database import BaseDatabase, BarOverview, TickOverview, DB_TZ
 from vnpy.trader.setting import SETTINGS
 
@@ -465,33 +466,35 @@ class StockMongodbDatabase(BaseDatabase):
 
     def load_bar_data(
         self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
+        code: str,
+        exchange: str,
+        interval: str,
         start: datetime,
         end: datetime
     ) -> List[BarData]:
         """读取K线数据"""
         filter: dict = {
-            "symbol": symbol,
-            "exchange": exchange.value,
-            "interval": interval.value,
-            "datetime": {
-                "$gte": start.astimezone(DB_TZ),
-                "$lte": end.astimezone(DB_TZ)
-            }
+            "code": code
         }
 
-        c: Cursor = self.bar_collection.find(filter)
+        c: Cursor = self.stock_history_daily_k_data.find(filter)
 
         bars: List[BarData] = []
+        bar_temp = {}
         for d in c:
-            d["exchange"] = Exchange(d["exchange"])
-            d["interval"] = Interval(d["interval"])
-            d["gateway_name"] = "DB"
-            d.pop("_id")
+            bar_temp["gateway_name"] = "MongoDB"
+            bar_temp['symbol'] = d['code']
+            bar_temp['exchange'] = 'sh | sz'
+            bar_temp['datetime'] = datetime.strptime(d['date'], '%Y-%m-%d')
+            bar_temp["interval"] = 'd'
 
-            bar = BarData(**d)
+            bar_temp['volume'] = int(d['volume'])
+            bar_temp['open_price'] = float(d['open'])
+            bar_temp['high_price'] = float(d['high'])
+            bar_temp['low_price'] = float(d['low'])
+            bar_temp['close_price'] = float(d['close'])
+
+            bar = BarData(**bar_temp)
             bars.append(bar)
 
         return bars
