@@ -16,13 +16,10 @@ from PySide6.QtCore import Qt, QSize, QSettings, QByteArray
 
 import vnpy
 from vnpy.event import EventEngine
-
-from .stock_widget import BaseMonitor
-
 from ..engine import MainEngine, BaseApp
 from ..utility import get_icon_path, TRADER_DIR
 
-from .stock_widget import StockHoldingPool, StockPrepareBuyPool, StockWatchPool, \
+from .stock_main_widget import BaseMonitor, StockHoldingPool, StockPrepareBuyPool, StockWatchPool, \
     StockKLineChart, AboutDialog, GlobalDialog, StockPrepareSellPool
 
 
@@ -37,7 +34,7 @@ class StockMainWindow(QMainWindow):
         self.event_engine: EventEngine = event_engine
 
         self.window_title: str = '股票分析平台'
-        icon = QIcon("/home/lxt/pythonProjects_2024/RelaxVnpy/vnpy_datamanager_stock/ui/manager.ico")
+        icon = QIcon("/home/lxt/pythonProjects_2024/RelaxVnpy/vnpy/trader/ui/ico/vnpy.ico")
         self.setWindowIcon(icon)
 
         self.widgets: Dict[str, QWidget] = {}
@@ -54,20 +51,17 @@ class StockMainWindow(QMainWindow):
         self.load_window_setting("custom")
 
     def init_window(self):
-        # 生成5个子窗口
+        # 生成4个子窗口
         self.stock_k_line_chart_widget = StockKLineChart(self.main_engine, self.event_engine)
         self.stock_holding_pool_widget = StockHoldingPool(self.main_engine, self.event_engine, self.stock_k_line_chart_widget.chart)
         self.stock_prepare_sell_pool_widget = StockPrepareSellPool(self.main_engine, self.event_engine)
         self.stock_prepare_buy_pool_widget = StockPrepareBuyPool(self.main_engine, self.event_engine)
-        # self.stock_watch_pool_widget = StockWatchPool(self.main_engine, self.event_engine)
 
         # 设置子窗口宽度
-        # self.stock_watch_pool_widget.setFixedWidth(150)
         self.stock_k_line_chart_widget.setFixedWidth(680)
         # 设置双击响应函数
         self.stock_prepare_buy_pool_widget.itemDoubleClicked.connect(self.stock_prepare_buy_pool_widget.update_with_cell)
         self.stock_prepare_sell_pool_widget.itemDoubleClicked.connect(self.stock_prepare_buy_pool_widget.update_with_cell)
-        # self.stock_watch_pool_widget.itemDoubleClicked.connect(self.stock_prepare_buy_pool_widget.update_with_cell)
 
         vlayout_left = QVBoxLayout()
         vlayout_left.addWidget(self.stock_holding_pool_widget)
@@ -76,7 +70,6 @@ class StockMainWindow(QMainWindow):
 
         hlayout_all = QHBoxLayout()
         hlayout_all.addLayout(vlayout_left)
-        # hlayout_all.addWidget(self.stock_watch_pool_widget)
         hlayout_all.addWidget(self.stock_k_line_chart_widget)
 
         widget_all = QWidget()

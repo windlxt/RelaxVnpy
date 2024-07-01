@@ -10,7 +10,7 @@ from threading import Thread
 from PySide6.QtWidgets import QWidget, QApplication, QCheckBox, QVBoxLayout, \
     QPushButton, QHBoxLayout, QLabel, QFrame, QRadioButton, QGridLayout, QStackedWidget, \
     QHeaderView, QTableWidget, QTreeWidget, QTreeWidgetItem, QTextEdit, QLineEdit, \
-    QComboBox, QDateEdit, QTableWidgetItem, QDialog, QFormLayout, QFileDialog, QMessageBox, QLayout
+    QComboBox, QDateEdit, QTableWidgetItem, QDialog, QFormLayout, QFileDialog, QMessageBox, QLayout, QAbstractItemView
 from PySide6.QtGui import QCloseEvent, QIcon
 from PySide6.QtCore import Slot, QDate, Qt, Signal
 from pymongo.cursor import Cursor
@@ -45,6 +45,10 @@ class StockManagerWidget(QWidget):
         self.database_updating = False          # 数据库是否正在更新中
         self.database_increment_update = True   # 数据库是否采取 增量更新的模式
         self.tablewidget: QTableWidget = QTableWidget()     # 右边输出表格
+        self.tablewidget.setEditTriggers(self.tablewidget.NoEditTriggers)
+        self.tablewidget.setAlternatingRowColors(True)
+        self.tablewidget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 设置选择行为
+
         self.tablewidget.tablewidget_data = pd.DataFrame()  # 右边输出表格展示的数据
 
         self.init_ui()

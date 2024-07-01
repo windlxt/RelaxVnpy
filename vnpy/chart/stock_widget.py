@@ -3,7 +3,10 @@ from typing import List, Dict, Type
 
 import pyqtgraph as pg
 
-from vnpy.trader.ui import QtGui, QtWidgets, QtCore
+from PySide6.QtWidgets import QWidget
+from PySide6.QtGui import QPaintEvent, QWheelEvent, QKeyEvent, QPen
+from PySide6.QtCore import Qt, QPoint, QObject, QPointF
+
 from vnpy.trader.object import BarData
 
 from .manager import BarManager
@@ -22,7 +25,7 @@ class StockChartWidget(pg.PlotWidget):
     """"""
     MIN_BAR_COUNT = 100
 
-    def __init__(self, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(self, parent: QWidget = None) -> None:
         """"""
         super().__init__(parent)
 
@@ -220,7 +223,7 @@ class StockChartWidget(pg.PlotWidget):
             y_range: tuple = item.get_y_range(min_ix, max_ix)
             plot.setRange(yRange=y_range)
 
-    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+    def paintEvent(self, event: QPaintEvent) -> None:
         """
         Reimplement this method of parent to update current max_ix value.
         """
@@ -230,24 +233,24 @@ class StockChartWidget(pg.PlotWidget):
 
         super().paintEvent(event)
 
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         """
         Reimplement this method of parent to move chart horizontally and zoom in/out.
         """
-        if event.key() == QtCore.Qt.Key_Left:
+        if event.key() == Qt.Key_Left:
             self._on_key_left()
-        elif event.key() == QtCore.Qt.Key_Right:
+        elif event.key() == Qt.Key_Right:
             self._on_key_right()
-        elif event.key() == QtCore.Qt.Key_Up:
+        elif event.key() == Qt.Key_Up:
             self._on_key_up()
-        elif event.key() == QtCore.Qt.Key_Down:
+        elif event.key() == Qt.Key_Down:
             self._on_key_down()
 
-    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+    def wheelEvent(self, event: QWheelEvent) -> None:
         """
         Reimplement this method of parent to zoom in/out.
         """
-        delta: QtCore.QPoint = event.angleDelta()
+        delta: QPoint = event.angleDelta()
 
         if delta.y() > 0:
             self._on_key_up()
@@ -305,7 +308,7 @@ class StockChartWidget(pg.PlotWidget):
         self._cursor.update_info()
 
 
-class ChartCursor(QtCore.QObject):
+class ChartCursor(QObject):
     """"""
 
     def __init__(
@@ -344,7 +347,7 @@ class ChartCursor(QtCore.QObject):
         self._h_lines: Dict[str, pg.InfiniteLine] = {}
         self._views: Dict[str, pg.ViewBox] = {}
 
-        pen: QtGui.QPen = pg.mkPen(WHITE_COLOR)
+        pen: QPen = pg.mkPen(WHITE_COLOR)
 
         for plot_name, plot in self._plots.items():
             v_line: pg.InfiniteLine = pg.InfiniteLine(angle=90, movable=False, pen=pen)
@@ -447,7 +450,7 @@ class ChartCursor(QtCore.QObject):
         bottom_plot: pg.PlotItem = list(self._plots.values())[-1]
         axis_width = bottom_plot.getAxis("right").width()
         axis_height = bottom_plot.getAxis("bottom").height()
-        axis_offset: QtCore.QPointF = QtCore.QPointF(axis_width, axis_height)
+        axis_offset: QPointF = QPointF(axis_width, axis_height)
 
         bottom_view: pg.ViewBox = list(self._views.values())[-1]
         bottom_right = bottom_view.mapSceneToView(

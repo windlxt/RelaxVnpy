@@ -18,6 +18,7 @@ from vnpy.trader.object import TickData
 from vnpy.trader.object_stock import BarData
 from vnpy.trader.database import BaseDatabase, BarOverview, TickOverview, DB_TZ
 from vnpy.trader.setting import SETTINGS
+from vnpy.trader.utility import printr
 
 
 class StockMongodbDatabase(BaseDatabase):
@@ -270,10 +271,9 @@ class StockMongodbDatabase(BaseDatabase):
             try:
                 self.stock_history_week_k_data.insert_many(result)
             except BulkWriteError:
-                print("pymongo.errors.BulkWriteError: batch op errors occurred, full error: {'writeErrors': "
+                printr("pymongo.errors.BulkWriteError: batch op errors occurred, full error: {'writeErrors': "
                       "[{'index': 5504, 'code': 11000, 'errmsg': 'E11000 duplicate key error collection: vnpy_stock.stock_history_week_k_data index: code_1_date_1 dup key: { code: \"sh.600000\", date: \"2024-06-14\" }', 'keyPattern': {'code': 1, 'date': 1}, 'keyValue': {'code': 'sh.600000', 'date': '2024-06-14'}, 'op': {'date': '2024-06-14', 'code': 'sh.600000', 'open': '8.3400000000', 'high': '8.3600000000', 'low': '7.9900000000', 'close': '8.1400000000', 'volume': '164646855', 'amount': '1339188141.4600', 'adjustflag': '2', 'turn': '0.561000', 'pctChg': '-2.045700', '_id': ObjectId('666cedd0f019c6b9c103224d')}}], "
                       "'writeConcernErrors': [], 'nInserted': 5504, 'nUpserted': 0, 'nMatched': 0, 'nModified': 0, 'nRemoved': 0, 'upserted': []}")
-                pass
 
             return
 
@@ -296,7 +296,12 @@ class StockMongodbDatabase(BaseDatabase):
         # 增量更新, 第一次也算增量更新
         if is_increment:
             print('enter stock_history_month_k_data increment.')
-            self.stock_history_month_k_data.insert_many(result)
+            try:
+                self.stock_history_month_k_data.insert_many(result)
+            except BulkWriteError:
+                printr("pymongo.errors.BulkWriteError: batch op errors occurred, full error: {'writeErrors': "
+                       "[{'index': 5457, 'code': 11000, 'errmsg': 'E11000 duplicate key error collection: vnpy_stock.stock_history_month_k_data index: code_1_date_1 dup key: { code: \"sh.600000\", date: \"2024-06-28\" }', 'keyPattern': {'code': 1, 'date': 1}, 'keyValue': {'code': 'sh.600000', 'date': '2024-06-28'}, 'op': {'date': '2024-06-28', 'code': 'sh.600000', 'open': '8.3000000000', 'high': '8.3800000000', 'low': '7.9900000000', 'close': '8.2300000000', 'volume': '739781164', 'amount': '6061976167.2700', 'adjustflag': '2', 'turn': '2.520200', 'pctChg': '-1.318900', '_id': ObjectId('667fb798a99dcca02b16364e')}}], "
+                       "'writeConcernErrors': [], 'nInserted': 5457, 'nUpserted': 0, 'nMatched': 0, 'nModified': 0, 'nRemoved': 0, 'upserted': []}")
             return
 
         # 全部更新
@@ -477,7 +482,13 @@ class StockMongodbDatabase(BaseDatabase):
             "code": code
         }
 
-        c: Cursor = self.stock_history_daily_k_data.find(filter)
+        match interval:
+            case 'd':
+                c: Cursor = self.stock_history_daily_k_data.find(filter)
+            case 'w':
+                c: Cursor = self.stock_history_week_k_data.find(filter)
+            case 'm':
+                c: Cursor = self.stock_history_month_k_data.find(filter)
 
         bars: List[BarData] = []
         bar_temp = {}
@@ -488,7 +499,11 @@ class StockMongodbDatabase(BaseDatabase):
             bar_temp['datetime'] = datetime.strptime(d['date'], '%Y-%m-%d')
             bar_temp["interval"] = 'd'
 
-            bar_temp['volume'] = int(d['volume'])
+            try:
+                bar_temp['volume'] = int(d['volume'])
+            except ValueError:
+                printr('bar_temp[\'volume\'] = int(d[\'volume\']) 出错！')
+                bar_temp['volume'] = int(0)
             bar_temp['open_price'] = float(d['open'])
             bar_temp['high_price'] = float(d['high'])
             bar_temp['low_price'] = float(d['low'])

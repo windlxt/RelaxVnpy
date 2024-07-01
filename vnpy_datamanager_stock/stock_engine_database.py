@@ -14,7 +14,7 @@ from vnpy.trader import utility
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
 from vnpy.event import Event
 from vnpy.trader.event import EVENT_UPDATE_DATABASE_FINISHED
-from vnpy.trader.database import BaseDatabase, get_database, BarOverview, DB_TZ
+from vnpy.trader.database import BaseDatabase, get_database
 from vnpy.trader.datafeed import BaseDatafeed, get_datafeed
 from vnpy.trader.setting import SETTINGS
 APP_NAME = "StockDataManager"

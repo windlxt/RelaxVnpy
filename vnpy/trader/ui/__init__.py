@@ -5,4 +5,4 @@
 """
 from PySide6 import QtGui, QtWidgets, QtCore
 from .qt import create_qapp
-from .main_trading_platform_window import TradingPlatformWindow
+

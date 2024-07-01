@@ -12,25 +12,6 @@ from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui.main_trading_platform_window import TradingPlatformWindow
 from vnpy.trader.ui.qt import create_qapp
 
-from vnpy_ctp import CtpGateway
-# from vnpy_ctptest import CtptestGateway
-# from vnpy_mini import MiniGateway
-# from vnpy_femas import FemasGateway
-# from vnpy_sopt import SoptGateway
-# from vnpy_sec import SecGateway
-# from vnpy_uft import UftGateway
-# from vnpy_esunny import EsunnyGateway
-# from vnpy_xtp import XtpGateway
-# from vnpy_tora import ToraStockGateway
-# from vnpy_tora import ToraOptionGateway
-# from vnpy_comstar import ComstarGateway
-# from vnpy_ib import IbGateway
-# from vnpy_tap import TapGateway
-# from vnpy_da import DaGateway
-# from vnpy_rohon import RohonGateway
-# from vnpy_tts import TtsGateway
-# from vnpy_ost import OstGateway
-# from vnpy_hft import GtjaGateway
 
 # from vnpy_paperaccount import PaperAccountApp
 from vnpy_ctastrategy import CtaStrategyApp
@@ -50,11 +31,14 @@ from vnpy_datamanager import DataManagerApp
 # from vnpy_portfoliomanager import PortfolioManagerApp
 
 from vnpy_datamanager_stock import StockDataManagerApp
+from vnpy_filter_backtester_stock import StockFilterApp
+from vnpy_stock_chartwizard import StockChartWizardApp
 
 
 print(vnpy.__version__)
 # from pathlib import Path
 # print(Path.cwd())
+
 
 def main_ui():
     """有图形窗口界面的平台"""
@@ -62,28 +46,6 @@ def main_ui():
 
     event_engine = EventEngine()
     main_engine = MainEngine(event_engine)
-
-    # main_engine.add_gateway(CtpGateway)
-    # main_engine.add_gateway(CtptestGateway)
-    # main_engine.add_gateway(MiniGateway)
-    # main_engine.add_gateway(FemasGateway)
-    # main_engine.add_gateway(SoptGateway)
-    # main_engine.add_gateway(SecGateway)
-    # main_engine.add_gateway(UftGateway)
-    # main_engine.add_gateway(EsunnyGateway)
-    # main_engine.add_gateway(XtpGateway)
-    # main_engine.add_gateway(ToraStockGateway)
-    # main_engine.add_gateway(ToraOptionGateway)
-    # main_engine.add_gateway(OesGateway)
-    # main_engine.add_gateway(ComstarGateway)
-    # main_engine.add_gateway(IbGateway)
-    # main_engine.add_gateway(TapGateway)
-    # main_engine.add_gateway(DaGateway)
-    # main_engine.add_gateway(RohonGateway)
-    # main_engine.add_gateway(TtsGateway)
-    # main_engine.add_gateway(OstGateway)
-    # main_engine.add_gateway(NhFuturesGateway)
-    # main_engine.add_gateway(NhStockGateway)
 
     # main_engine.add_app(PaperAccountApp)
     # main_engine.add_app(CtaStrategyApp)
@@ -103,6 +65,8 @@ def main_ui():
     # main_engine.add_app(PortfolioManagerApp)
 
     # ====以下是股票分析界面 APP =======================================
+    main_engine.add_app(StockFilterApp)
+    main_engine.add_app(StockChartWizardApp)
     main_engine.add_app(StockDataManagerApp)
 
     trading_platform_window = TradingPlatformWindow(main_engine, event_engine)

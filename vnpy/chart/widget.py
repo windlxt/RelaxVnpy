@@ -18,7 +18,7 @@ from .item import ChartItem
 pg.setConfigOptions(antialias=True)
 
 
-class StockChartWidget(pg.PlotWidget):
+class ChartWidget(pg.PlotWidget):
     """"""
     MIN_BAR_COUNT = 100
 
@@ -310,7 +310,7 @@ class ChartCursor(QtCore.QObject):
 
     def __init__(
         self,
-        widget: StockChartWidget,
+        widget: ChartWidget,
         manager: BarManager,
         plots: Dict[str, pg.GraphicsObject],
         item_plot_map: Dict[ChartItem, pg.GraphicsObject]
@@ -318,7 +318,7 @@ class ChartCursor(QtCore.QObject):
         """"""
         super().__init__()
 
-        self._widget: StockChartWidget = widget
+        self._widget: ChartWidget = widget
         self._manager: BarManager = manager
         self._plots: Dict[str, pg.GraphicsObject] = plots
         self._item_plot_map: Dict[ChartItem, pg.GraphicsObject] = item_plot_map
