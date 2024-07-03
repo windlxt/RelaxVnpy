@@ -13,7 +13,7 @@ from vnpy.trader.engine import MainEngine, BaseEngine
 from vnpy.trader.ui import QtCore, QtWidgets, QtGui
 from vnpy.trader.ui.widget import BaseMonitor, BaseCell, DirectionCell, EnumCell
 from vnpy.event import Event, EventEngine
-from vnpy.chart import StockChartWidget, CandleItem, VolumeItem
+from vnpy.chart import ChartWidget, CandleItem, VolumeItem
 from vnpy.trader.utility import load_json, save_json
 from vnpy.trader.object import BarData, TradeData, OrderData
 from vnpy.trader.database import DB_TZ
@@ -1205,7 +1205,7 @@ class CandleChartDialog(QtWidgets.QDialog):
         self.resize(1400, 800)
 
         # Create chart widget
-        self.chart: StockChartWidget = StockChartWidget()
+        self.chart: ChartWidget = ChartWidget()
         self.chart.add_plot("candle", hide_x_axis=True)
         self.chart.add_plot("volume", maximum_height=200)
         self.chart.add_item(CandleItem, "candle", "candle")

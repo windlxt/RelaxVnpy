@@ -17,9 +17,11 @@ from PySide6.QtWidgets import QWidget, QApplication, QCheckBox, QVBoxLayout, \
 from PySide6.QtGui import QCloseEvent, QIcon
 from PySide6.QtCore import Slot, QDate, Qt, Signal, QSize
 
-from vnpy_filter_backtester_stock.stock_filter_engine import StockFilterEngine, MyListWidgetItem
+from vnpy_filter_backtester_stock.stock_filter_engine import StockFilterEngine
+from .base_widget import MyListWidgetItem
 from vnpy.trader.engine import MainEngine, EventEngine, Event
 from vnpy_stock_chartwizard.ui import StockChartWizardWidget
+from .base_widget import BacktesterManager
 
 
 class StockFilterWidget(QWidget):
@@ -39,8 +41,8 @@ class StockFilterWidget(QWidget):
         icon = QIcon("/vnpy_filter_backtester_stock/ui/filter.ico")
         self.setWindowIcon(icon)
 
-        self.cb_index_list = []
-        self.cb_stock_list = []
+        self.cb_index_list: QComboBox = []
+        self.cb_stock_list: QComboBox = []
 
         # TODO: 从文件夹中读取策略
         self.index_strategys = ['all']
@@ -86,7 +88,12 @@ class StockFilterWidget(QWidget):
         self.hlayout_1.addWidget(self.pbtn_filter_index)
 
         self.lw_index = QListWidget()
-        self.filter_engine.load_index_all(self.lw_index)
+        result_index = self.filter_engine.load_index_all()
+        for item in result_index:
+            # item 是字典，如：{'code': 'sz.399998', 'code_name': '中证煤炭指数'}
+            i = MyListWidgetItem(item['code_name'], item)
+            i.setTextAlignment(Qt.AlignLeft)
+            self.lw_index.addItem(i)
 
         self.pbtn_show_index_k_chart = QPushButton('查看指数K线图')
         self.pbtn_show_index_k_chart.setStyleSheet("QPushButton{"
@@ -235,7 +242,7 @@ class StockFilterWidget(QWidget):
         self.vlayout_self_select_stock.addWidget(self.pbtn_show_self_select_k_chart)
 
         # 6. 占位
-        self.pbn = QPushButton('占位')
+        self.window_backtester = BacktesterManager(self.main_engine, self.event_engine)
 
         # 设置窗口布局
         self.widget_left = QWidget()
@@ -250,7 +257,7 @@ class StockFilterWidget(QWidget):
 
         self.hlayout_all = QHBoxLayout()
         self.hlayout_all.addWidget(self.widget_left)
-        self.hlayout_all.addWidget(self.pbn)
+        self.hlayout_all.addWidget(self.window_backtester)
         self.setLayout(self.hlayout_all)
 
 
@@ -284,7 +291,12 @@ class StockFilterWidget(QWidget):
 
     @Slot()
     def load_stock_all(self):
-        self.filter_engine.load_stock_all(self.lw_stock)
+        self.lw_stock.clear()
+        result_stock = self.filter_engine.load_stock_all()
+        for item in result_stock:
+            # item 是字典，如：{'code': 'sh.600000', 'code_name': '浦发银行'}
+            i = MyListWidgetItem(item['code_name'], item)
+            self.lw_stock.addItem(i)
 
     @Slot()
     def filter_index_by_strategies(self):

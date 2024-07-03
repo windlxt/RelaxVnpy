@@ -74,7 +74,8 @@ class BacktesterEngine(BaseEngine):
         """
         Init datafeed client.
         """
-        result: bool = self.datafeed.init(self.write_log)
+        # result: bool = self.datafeed.init(self.write_log)
+        result: bool = self.datafeed.init()
         if result:
             self.write_log("数据服务初始化成功")
 

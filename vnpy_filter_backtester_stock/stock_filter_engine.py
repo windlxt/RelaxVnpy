@@ -8,7 +8,6 @@ import importlib
 import traceback
 import pandas as pd
 
-from PySide6.QtWidgets import QListWidgetItem
 from PySide6.QtCore import Qt
 
 import vnpy_filter_backtester_stock
@@ -16,7 +15,7 @@ import vnpy_filter_backtester_stock
 from pathlib import Path
 from glob import glob
 from types import ModuleType
-from typing import Any, Dict, List
+
 from vnpy_filter_strategy_stock import StockStrategyTemplate
 
 from vnpy.trader.engine import BaseEngine, MainEngine, EventEngine
@@ -24,30 +23,6 @@ from vnpy.event import Event
 from vnpy.trader.database import BaseDatabase, get_database
 from vnpy.trader.setting import SETTINGS
 APP_NAME = "StockFilter"
-
-
-class MyListWidgetItem(QListWidgetItem):
-    """
-        General cell used in listwidgets.
-    """
-    def __init__(self, content: Any, data: Any) -> None:
-        """"""
-        super().__init__()
-        self.setTextAlignment(Qt.AlignCenter)
-        self.set_content(content, data)
-
-    def set_content(self, content: Any, data: Any) -> None:
-        """
-        Set text content.
-        """
-        self.setText(str(content))
-        self._data = data
-
-    def get_data(self) -> Any:
-        """
-        Get data object.
-        """
-        return self._data
 
 
 class StockFilterEngine(BaseEngine):
@@ -68,25 +43,13 @@ class StockFilterEngine(BaseEngine):
         print('self.classes_index_strategies:', self.classes_index_strategies)
         print('self.classes_stock_strategies:', self.classes_stock_strategies)
 
-    def load_index_all(self, lw):
-        self.result_index = self.database.all_index_list.find({}, {'code': 1, 'code_name': 1, '_id': 0})
-        # self.df_index = pd.DataFrame(result)
-        # print(self.df_index)
-        for item in self.result_index:
-            # item 是字典，如：{'code': 'sz.399998', 'code_name': '中证煤炭指数'}
-            i = MyListWidgetItem(item['code_name'], item)
-            i.setTextAlignment(Qt.AlignLeft)
-            lw.addItem(i)
+    def load_index_all(self):
+        result_index = self.database.all_index_list.find({}, {'code': 1, 'code_name': 1, '_id': 0})
+        return result_index
 
-    def load_stock_all(self, lw):
-        lw.clear()
-        self.result_stock = self.database.all_stock_list.find({}, {'code': 1, 'code_name': 1, '_id': 0})
-        # self.df_index = pd.DataFrame(result)
-        # print(self.df_index)
-        for item in self.result_stock:
-            # item 是字典，如：{'code': 'sh.600000', 'code_name': '浦发银行'}
-            i = MyListWidgetItem(item['code_name'], item)
-            lw.addItem(i)
+    def load_stock_all(self):
+        result_stock = self.database.all_stock_list.find({}, {'code': 1, 'code_name': 1, '_id': 0})
+        return result_stock
 
     def get_all_index_strategies(self):
         result = self.get_index_strategy_class_names()
